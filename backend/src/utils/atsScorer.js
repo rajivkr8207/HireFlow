@@ -1,6 +1,6 @@
-import { createRequire } from "module";
+import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const pdfParseModule = require("pdf-parse");
+const pdfParseModule = require('pdf-parse');
 
 /**
  * Extract text content from a file buffer (PDF or plain text).
@@ -9,28 +9,28 @@ const pdfParseModule = require("pdf-parse");
  * @returns {Promise<string>}
  */
 export const extractResumeText = async (buffer, mimetype) => {
-    if (!buffer) return "";
-    try {
-        if (mimetype === "application/pdf") {
-            if (typeof pdfParseModule === "function") {
-                const data = await pdfParseModule(buffer);
-                return data.text || "";
-            } else if (pdfParseModule && pdfParseModule.PDFParse) {
-                const parser = new pdfParseModule.PDFParse({ data: buffer });
-                await parser.load();
-                const textResult = await parser.getText();
-                return typeof textResult === "string" ? textResult : (textResult?.text || "");
-            } else if (pdfParseModule && typeof pdfParseModule.default === "function") {
-                const data = await pdfParseModule.default(buffer);
-                return data.text || "";
-            }
-        }
-        // Fallback for plain text or string buffers
-        return buffer.toString("utf-8");
-    } catch (error) {
-        console.error("PDF Parsing Error:", error.message);
-        return buffer.toString("utf-8");
+  if (!buffer) return '';
+  try {
+    if (mimetype === 'application/pdf') {
+      if (typeof pdfParseModule === 'function') {
+        const data = await pdfParseModule(buffer);
+        return data.text || '';
+      } else if (pdfParseModule && pdfParseModule.PDFParse) {
+        const parser = new pdfParseModule.PDFParse({ data: buffer });
+        await parser.load();
+        const textResult = await parser.getText();
+        return typeof textResult === 'string' ? textResult : textResult?.text || '';
+      } else if (pdfParseModule && typeof pdfParseModule.default === 'function') {
+        const data = await pdfParseModule.default(buffer);
+        return data.text || '';
+      }
     }
+    // Fallback for plain text or string buffers
+    return buffer.toString('utf-8');
+  } catch (error) {
+    console.error('PDF Parsing Error:', error.message);
+    return buffer.toString('utf-8');
+  }
 };
 
 /**
@@ -42,76 +42,84 @@ export const extractResumeText = async (buffer, mimetype) => {
  * @param {Object} params.job - JobPosting Mongoose document
  * @returns {{ score: number, matchedSkills: string[], missingSkills: string[], summary: string }}
  */
-export const calculateATSScore = ({ resumeText = "", candidateSkills = [], coverLetter = "", job = {} }) => {
-    const combinedContent = `${resumeText} ${candidateSkills.join(" ")} ${coverLetter}`.toLowerCase();
+export const calculateATSScore = ({
+  resumeText = '',
+  candidateSkills = [],
+  coverLetter = '',
+  job = {},
+}) => {
+  const combinedContent = `${resumeText} ${candidateSkills.join(' ')} ${coverLetter}`.toLowerCase();
 
-    const requiredSkills = Array.isArray(job.skillsRequired) ? job.skillsRequired : [];
-    const jobTitle = (job.title || "").toLowerCase();
-    const jobDescription = (job.description || "").toLowerCase();
-    const jobQualifications = Array.isArray(job.qualifications) ? job.qualifications.join(" ").toLowerCase() : "";
+  const requiredSkills = Array.isArray(job.skillsRequired) ? job.skillsRequired : [];
+  const jobTitle = (job.title || '').toLowerCase();
+  const jobDescription = (job.description || '').toLowerCase();
+  const jobQualifications = Array.isArray(job.qualifications)
+    ? job.qualifications.join(' ').toLowerCase()
+    : '';
 
-    let matchedSkills = [];
-    let missingSkills = [];
+  let matchedSkills = [];
+  let missingSkills = [];
 
-    // 1. Skill Matching (50% weight)
-    if (requiredSkills.length > 0) {
-        requiredSkills.forEach((skill) => {
-            const cleanSkill = skill.trim().toLowerCase();
-            if (cleanSkill && combinedContent.includes(cleanSkill)) {
-                matchedSkills.push(skill);
-            } else {
-                missingSkills.push(skill);
-            }
-        });
-    }
-
-    const skillScore = requiredSkills.length > 0
-        ? (matchedSkills.length / requiredSkills.length) * 50
-        : 35; // Default baseline if no explicit skills required
-
-    // 2. Job Title Keyword Match (20% weight)
-    const titleWords = jobTitle.split(/\s+/).filter((w) => w.length > 2);
-    let titleMatchCount = 0;
-    titleWords.forEach((word) => {
-        if (combinedContent.includes(word)) titleMatchCount++;
+  // 1. Skill Matching (50% weight)
+  if (requiredSkills.length > 0) {
+    requiredSkills.forEach((skill) => {
+      const cleanSkill = skill.trim().toLowerCase();
+      if (cleanSkill && combinedContent.includes(cleanSkill)) {
+        matchedSkills.push(skill);
+      } else {
+        missingSkills.push(skill);
+      }
     });
+  }
 
-    const titleScore = titleWords.length > 0
-        ? (titleMatchCount / titleWords.length) * 20
-        : 15;
+  const skillScore =
+    requiredSkills.length > 0 ? (matchedSkills.length / requiredSkills.length) * 50 : 35; // Default baseline if no explicit skills required
 
-    // 3. Description & Qualifications Keyword Match (20% weight)
-    const descWords = `${jobDescription} ${jobQualifications}`
-        .replace(/[^\w\s]/gi, "")
-        .split(/\s+/)
-        .filter((w) => w.length > 4);
+  // 2. Job Title Keyword Match (20% weight)
+  const titleWords = jobTitle.split(/\s+/).filter((w) => w.length > 2);
+  let titleMatchCount = 0;
+  titleWords.forEach((word) => {
+    if (combinedContent.includes(word)) titleMatchCount++;
+  });
 
-    const uniqueDescWords = [...new Set(descWords)];
-    let descMatchCount = 0;
-    uniqueDescWords.slice(0, 30).forEach((word) => {
-        if (combinedContent.includes(word)) descMatchCount++;
-    });
+  const titleScore = titleWords.length > 0 ? (titleMatchCount / titleWords.length) * 20 : 15;
 
-    const descScore = uniqueDescWords.length > 0
-        ? Math.min((descMatchCount / Math.min(uniqueDescWords.length, 30)) * 20, 20)
-        : 15;
+  // 3. Description & Qualifications Keyword Match (20% weight)
+  const descWords = `${jobDescription} ${jobQualifications}`
+    .replace(/[^\w\s]/gi, '')
+    .split(/\s+/)
+    .filter((w) => w.length > 4);
 
-    // 4. Baseline & Content Completeness (10% weight)
-    let completenessScore = 5;
-    if (resumeText.length > 100) completenessScore += 3;
-    if (coverLetter.length > 20) completenessScore += 2;
+  const uniqueDescWords = [...new Set(descWords)];
+  let descMatchCount = 0;
+  uniqueDescWords.slice(0, 30).forEach((word) => {
+    if (combinedContent.includes(word)) descMatchCount++;
+  });
 
-    const totalScore = Math.min(Math.round(skillScore + titleScore + descScore + completenessScore), 100);
+  const descScore =
+    uniqueDescWords.length > 0
+      ? Math.min((descMatchCount / Math.min(uniqueDescWords.length, 30)) * 20, 20)
+      : 15;
 
-    let summary = `Matched ${matchedSkills.length} of ${requiredSkills.length} required skills.`;
-    if (totalScore >= 80) summary += " Excellent candidate match for this role!";
-    else if (totalScore >= 60) summary += " Good match with core competencies.";
-    else summary += " Consider tailoring your resume with key required skills.";
+  // 4. Baseline & Content Completeness (10% weight)
+  let completenessScore = 5;
+  if (resumeText.length > 100) completenessScore += 3;
+  if (coverLetter.length > 20) completenessScore += 2;
 
-    return {
-        score: totalScore,
-        matchedSkills,
-        missingSkills,
-        summary,
-    };
+  const totalScore = Math.min(
+    Math.round(skillScore + titleScore + descScore + completenessScore),
+    100,
+  );
+
+  let summary = `Matched ${matchedSkills.length} of ${requiredSkills.length} required skills.`;
+  if (totalScore >= 80) summary += ' Excellent candidate match for this role!';
+  else if (totalScore >= 60) summary += ' Good match with core competencies.';
+  else summary += ' Consider tailoring your resume with key required skills.';
+
+  return {
+    score: totalScore,
+    matchedSkills,
+    missingSkills,
+    summary,
+  };
 };

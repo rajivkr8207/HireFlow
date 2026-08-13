@@ -1,10 +1,9 @@
-import { app } from "./src/app.js"
-import Config from "./src/config/config.js";
-import { ConnectDB } from "./src/config/database.js";
-import logger from "./src/config/logger.js";
+import { app } from './src/app.js';
+import Config from './src/config/config.js';
+import { ConnectDB } from './src/config/database.js';
+import logger from './src/config/logger.js';
 
-
-ConnectDB()
+ConnectDB();
 app.listen(Config.port, () => {
-    logger.info(`Server is running on port ${Config.port}`);
-})
+  logger.info(`Server is running on port ${Config.port}`);
+});

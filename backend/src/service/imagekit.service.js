@@ -1,5 +1,5 @@
-import ImageKit, { toFile } from "@imagekit/nodejs";
-import Config from "../config/config.js";
+import ImageKit, { toFile } from '@imagekit/nodejs';
+import Config from '../config/config.js';
 
 const imagekit = new ImageKit({
   publicKey: Config.imagekit_public_key,
@@ -9,22 +9,26 @@ const imagekit = new ImageKit({
 
 class ImageKitService {
   async uploadAvatar(file) {
-    const fileObj = file.buffer ? await toFile(Buffer.from(file.buffer), file.originalname || "avatar") : file;
+    const fileObj = file.buffer
+      ? await toFile(Buffer.from(file.buffer), file.originalname || 'avatar')
+      : file;
     const result = await imagekit.files.upload({
       file: fileObj,
-      fileName: `avatar_${Date.now()}_${(file.originalname || "avatar").replace(/\s+/g, "_")}`,
-      folder: "/user/avatar",
+      fileName: `avatar_${Date.now()}_${(file.originalname || 'avatar').replace(/\s+/g, '_')}`,
+      folder: '/user/avatar',
     });
     return { url: result.url, fileId: result.fileId };
   }
 
   async uploadDocument(file, documentName) {
-    const safeName = documentName ? documentName.replace(/\s+/g, "_") : "doc";
-    const fileObj = file.buffer ? await toFile(Buffer.from(file.buffer), file.originalname || `${safeName}.pdf`) : file;
+    const safeName = documentName ? documentName.replace(/\s+/g, '_') : 'doc';
+    const fileObj = file.buffer
+      ? await toFile(Buffer.from(file.buffer), file.originalname || `${safeName}.pdf`)
+      : file;
     const result = await imagekit.files.upload({
       file: fileObj,
       fileName: `doc_${safeName}_${Date.now()}`,
-      folder: "/documents",
+      folder: '/documents',
     });
     console.log('imagekit file', result);
     return { url: result.url, fileId: result.fileId };
