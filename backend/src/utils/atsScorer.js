@@ -57,8 +57,8 @@ export const calculateATSScore = ({
     ? job.qualifications.join(' ').toLowerCase()
     : '';
 
-  let matchedSkills = [];
-  let missingSkills = [];
+  const matchedSkills = [];
+  const missingSkills = [];
 
   // 1. Skill Matching (50% weight)
   if (requiredSkills.length > 0) {

@@ -2,50 +2,45 @@ import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 
 export default [
-    {
-        ignores: [
-            'node_modules/**',
-            'dist/**',
-            'coverage/**',
-            'uploads/**',
-        ],
+  {
+    ignores: ['node_modules/**', 'dist/**', 'coverage/**', 'uploads/**'],
+  },
+
+  js.configs.recommended,
+
+  {
+    files: ['**/*.js'],
+
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+      },
     },
 
-    js.configs.recommended,
-
-    {
-        files: ['**/*.js'],
-
-        languageOptions: {
-            ecmaVersion: 'latest',
-            sourceType: 'module',
-            globals: {
-                console: 'readonly',
-                process: 'readonly',
-                Buffer: 'readonly',
-                __dirname: 'readonly',
-                __filename: 'readonly',
-            },
+    rules: {
+      'no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
         },
+      ],
 
-        rules: {
-            'no-unused-vars': [
-                'warn',
-                {
-                    argsIgnorePattern: '^_',
-                    varsIgnorePattern: '^_',
-                },
-            ],
+      'no-console': 'off',
 
-            'no-console': 'off',
+      'no-undef': 'error',
 
-            'no-undef': 'error',
+      'prefer-const': 'error',
 
-            'prefer-const': 'error',
-
-            'no-var': 'error',
-        },
+      'no-var': 'error',
     },
+  },
 
-    prettier,
+  prettier,
 ];

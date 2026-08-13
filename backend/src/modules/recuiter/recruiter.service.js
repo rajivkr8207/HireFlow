@@ -1,5 +1,6 @@
 import User from '../user/user.model.js';
 import recruiterModel from './recruiter.model.js';
+import { ApiError } from '../../utils/ApiError.js';
 
 export const CreateRecruiter = async ({ userId, company, designation, bio, linkedin }) => {
   const user = await User.findById(userId);

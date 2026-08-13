@@ -6,7 +6,6 @@ import {
   getMyApplications,
   withdrawApplication,
 } from './applicant.service.js';
-import fs from 'fs';
 /**
  * GET /api/v1/applicant/jobs
  * Paginated list of all open jobs for candidates to browse

@@ -1,4 +1,4 @@
-import { GetCandidate, RegisterCandidate } from './candidate.service.js';
+import { GetCandidate, RegisterCandidate, UpdateCandidate } from './candidate.service.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { ApiResponse } from '../../utils/ApiResponse.js';
 

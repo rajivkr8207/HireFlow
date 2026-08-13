@@ -2,7 +2,7 @@ import express from 'express';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { Middleware } from './app.middleware.js';
 import { AllRoutes } from './app.routes.js';
-
+import path from 'path';
 const app = express();
 
 Middleware(app);
