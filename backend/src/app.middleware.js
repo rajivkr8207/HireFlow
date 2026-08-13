@@ -3,10 +3,14 @@ import cookieParser from "cookie-parser"
 import cors from "cors"
 import morgan from "morgan"
 import Config from "./config/config.js";
+import helmet from 'helmet'
+import compression from 'compression'
 
 const corsOption = {
     origin: Config.frontend_url,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 }
 
 export const Middleware = (app) => {
@@ -16,4 +20,6 @@ export const Middleware = (app) => {
     app.use(cookieParser());
     app.use(cors(corsOption));
     app.use(morgan("dev"));
+    app.use(helmet())
+    app.use(compression())
 }

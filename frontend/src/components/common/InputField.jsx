@@ -25,7 +25,7 @@ const InputField = ({
             readOnly={readOnly}
             className={`
         w-full rounded-lg border border-gray-300
-        bg-white px-4 py-2.5
+        bg-gray-800 px-4 py-2.5
         text-sm text-gray-900
         outline-none
         transition-all duration-200

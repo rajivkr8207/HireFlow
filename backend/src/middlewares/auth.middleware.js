@@ -8,9 +8,13 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
     if (!token) {
         throw new ApiError(401, "Unauthorized request");
     }
-    const decodedToken = jwt.verify(token, Config.jwt_access_secret);
-    req.user = decodedToken;
-    next();
+    try {
+        const decodedToken = jwt.verify(token, Config.jwt_access_secret);
+        req.user = decodedToken;
+        next();
+    } catch (error) {
+        throw new ApiError(401, "Invalid token");
+    }
 });
 
 export const verifyAdmin = asyncHandler(async (req, res, next) => {

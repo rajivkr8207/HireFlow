@@ -1,4 +1,4 @@
-import ImageKit from "@imagekit/nodejs";
+import ImageKit, { toFile } from "@imagekit/nodejs";
 import Config from "../config/config.js";
 
 const imagekit = new ImageKit({
@@ -8,42 +8,30 @@ const imagekit = new ImageKit({
 });
 
 class ImageKitService {
-  /**
-   * Upload a user avatar image.
-   * @param {Express.Multer.File} file - multer file object (memory storage)
-   * @returns {Promise<{ url: string, fileId: string }>}
-   */
   async uploadAvatar(file) {
-    const result = await imagekit.upload({
-      file: file.buffer,
-      fileName: `avatar_${Date.now()}_${file.originalname.replace(/\s+/g, "_")}`,
+    const fileObj = file.buffer ? await toFile(Buffer.from(file.buffer), file.originalname || "avatar") : file;
+    const result = await imagekit.files.upload({
+      file: fileObj,
+      fileName: `avatar_${Date.now()}_${(file.originalname || "avatar").replace(/\s+/g, "_")}`,
       folder: "/user/avatar",
     });
     return { url: result.url, fileId: result.fileId };
   }
 
-  /**
-   * Upload a document file (PDF / image / etc.).
-   * @param {Express.Multer.File} file - multer file object (memory storage)
-   * @param {string} documentName - human-readable name for the document
-   * @returns {Promise<{ url: string, fileId: string }>}
-   */
   async uploadDocument(file, documentName) {
-    const safeName = documentName.replace(/\s+/g, "_");
-    const result = await imagekit.upload({
-      file: file.buffer,
+    const safeName = documentName ? documentName.replace(/\s+/g, "_") : "doc";
+    const fileObj = file.buffer ? await toFile(Buffer.from(file.buffer), file.originalname || `${safeName}.pdf`) : file;
+    const result = await imagekit.files.upload({
+      file: fileObj,
       fileName: `doc_${safeName}_${Date.now()}`,
       folder: "/documents",
     });
+    console.log('imagekit file', result);
     return { url: result.url, fileId: result.fileId };
   }
 
-  /**
-   * Delete a file from ImageKit by its fileId.
-   * @param {string} fileId
-   */
   async deleteFile(fileId) {
-    await imagekit.deleteFile(fileId);
+    await imagekit.files.deleteFile(fileId);
   }
 }
 

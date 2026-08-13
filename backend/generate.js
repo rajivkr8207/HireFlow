@@ -23,4 +23,4 @@ function createModule(name) {
         );
     });
 }
-createModule("applicat")
+createModule("applicant")

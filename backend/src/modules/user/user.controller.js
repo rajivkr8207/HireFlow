@@ -56,9 +56,10 @@ export const login = asyncHandler(async (req, res) => {
 // POST /api/v1/users/logout  [Protected]
 // ─────────────────────────────────────────────
 export const logout = asyncHandler(async (req, res) => {
-    await logoutUser(req.user._id);
-
+    await logoutUser(req.user.id);
     return res
+        .clearCookie('accessToken')
+        .clearCookie('refreshToken')
         .status(200)
         .json(new ApiResponse(200, {}, "Logged out successfully"));
 });
@@ -96,7 +97,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
 // GET /api/v1/users/profile  [Protected]
 // ─────────────────────────────────────────────
 export const getProfile = asyncHandler(async (req, res) => {
-    const user = await getUserById(req.user._id);
+    const user = await getUserById(req.user.id);
 
     return res
         .status(200)

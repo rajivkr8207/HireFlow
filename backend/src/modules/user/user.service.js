@@ -1,12 +1,12 @@
 import User from "./user.model.js";
 import { ApiError } from "../../utils/ApiError.js";
 
-export const registerUser = async ({ fullName, username, email, password, mobile, image }) => {
+export const registerUser = async ({ fullName, username, email, password, mobile, image, role }) => {
     const existingUser = await User.findOne({ $or: [{ email }, { username }, { mobile }] });
     if (existingUser) {
         throw new ApiError(409, "User with this email, username, or mobile already exists");
     }
-    const user = await User.create({ fullName, username, email, password, mobile, image });
+    const user = await User.create({ fullName, username, email, password, mobile, image, role });
     return user;
 };
 
@@ -35,9 +35,6 @@ export const logoutUser = async (id) => {
     if (!user) {
         throw new ApiError(404, "User not found");
     }
-    res.clearCookie('accessToken')
-    res.clearCookie('refreshToken')
-    // Stateless JWT — nothing to do server-side (cookies cleared in controller)
     return;
 };
 
