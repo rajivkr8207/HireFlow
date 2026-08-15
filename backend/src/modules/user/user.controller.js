@@ -65,10 +65,9 @@ export const logout = asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────
 export const refreshToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
-
   const { accessToken, refreshToken: newRefreshToken } =
     await refreshAccessToken(incomingRefreshToken);
-
+  console.log(newRefreshToken, accessToken);
   return res
     .status(200)
     .cookie('accessToken', accessToken, {

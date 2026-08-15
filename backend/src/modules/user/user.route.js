@@ -41,7 +41,7 @@ authRouter.post('/login', loginValidation, login);
  * @desc    Refresh access token using refresh token
  * @access  Public
  */
-authRouter.post('/refresh-token', refreshToken);
+authRouter.post('/refresh-token', refreshToken)
 
 // ─────────────────────────────────────────────
 // PROTECTED ROUTES  (requires valid JWT)

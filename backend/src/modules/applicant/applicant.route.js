@@ -18,7 +18,7 @@ applicantRouter.use(verifyCandidate);
 applicantRouter.get('/jobs', getAllJobsValidation, getAllJobsController);
 
 // Submit a job application (supports resume file upload via multer -> ImageKit + ATS score)
-applicantRouter.post('/apply', upload.single('resume'), applyJobValidation, applyJobController);
+applicantRouter.post('/apply', upload.single('resumeFile'), applyJobValidation, applyJobController);
 
 // View own applications with pagination & ATS scores
 applicantRouter.get('/my-applications', getMyApplicationsController);

@@ -8,7 +8,7 @@ export const validate = (req, res, next) => {
       .array()
       .map((err) => err.msg)
       .join(', ');
-    throw new ApiError(400, errorMessages);
+    return next(new ApiError(400, errorMessages));
   }
   next();
 };

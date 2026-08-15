@@ -1,5 +1,7 @@
 import User from './user.model.js';
 import { ApiError } from '../../utils/ApiError.js';
+import jwt from 'jsonwebtoken';
+import Config from '../../config/Config.js';
 
 export const registerUser = async ({
   fullName,
@@ -50,13 +52,10 @@ export const refreshAccessToken = async (incomingRefreshToken) => {
   if (!incomingRefreshToken) {
     throw new ApiError(401, 'Refresh token is required');
   }
-  const jwt = (await import('jsonwebtoken')).default;
-  const config = (await import('../../config/config.js')).default;
 
-  const decoded = jwt.verify(incomingRefreshToken, config.jwt_refresh_secret);
+  const decoded = jwt.verify(incomingRefreshToken, Config.jwt_refresh_secret);
   const user = await User.findById(decoded.id);
   if (!user) throw new ApiError(404, 'User not found');
-
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
   return { accessToken, refreshToken };

@@ -83,7 +83,7 @@ userSchema.methods.comparePassword = async function (password) {
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
-      id: this._id,
+      id: this._id.toString(),
       role: this.role,
       email: this.email,
     },
@@ -97,7 +97,7 @@ userSchema.methods.generateAccessToken = function () {
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {
-      id: this._id,
+      id: this._id.toString(),
     },
     Config.jwt_refresh_secret,
     {

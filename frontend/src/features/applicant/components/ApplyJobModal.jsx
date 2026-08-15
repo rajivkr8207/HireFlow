@@ -40,7 +40,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSubmit, isLoading }) => {
     formData.append('jobId', job._id);
 
     if (uploadType === 'file' && resumeFile) {
-      formData.append('resume', resumeFile);
+      formData.append('resumeFile', resumeFile);
     } else {
       formData.append('resume', resumeUrl.trim());
     }

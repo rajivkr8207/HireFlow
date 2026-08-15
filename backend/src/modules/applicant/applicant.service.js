@@ -69,6 +69,15 @@ export const applyToJob = async ({
   expectedSalary,
   noticePeriod,
 }) => {
+  console.log("applyjob", {
+    userId,
+    jobId,
+    file,
+    resume,
+    coverLetter,
+    expectedSalary,
+    noticePeriod,
+  })
   // 1. Verify job exists and is open
   const job = await jobpostingModel.findById(jobId);
   if (!job) {
