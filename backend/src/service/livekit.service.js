@@ -1,5 +1,4 @@
 import { AccessToken } from 'livekit-server-sdk';
-
 import Config from '../config/Config.js';
 
 export const createLiveKitToken = async ({ roomName, userId, userName, isRecruiter = true }) => {

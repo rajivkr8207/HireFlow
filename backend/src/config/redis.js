@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import Config from './config.js';
+import Config from './Config.js';
 
 const redis = new Redis({
   host: Config.redis_host || '127.0.0.1',
