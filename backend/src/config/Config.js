@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+const DAILY_API_URL = 'https://api.daily.co/v1';
+
 const Config = {
   port: process.env.PORT,
   env: process.env.NODE_ENV,
@@ -30,6 +32,11 @@ const Config = {
 
   // Frontend
   frontend_url: process.env.FRONTEND_URL,
+
+  // LiveKit
+  livekit_url: process.env.LIVEKIT_URL,
+  livekit_api_key: process.env.LIVEKIT_API_KEY,
+  livekit_api_secret: process.env.LIVEKIT_API_SECRET,
 };
 
 export default Config;

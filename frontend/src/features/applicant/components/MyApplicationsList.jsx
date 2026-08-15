@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Briefcase, Building2, MapPin, ExternalLink, Trash2, Clock, Sparkles, CheckCircle2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Briefcase, Building2, MapPin, ExternalLink, Trash2, Clock, Sparkles, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, Video, Calendar } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { getInterviewByApplicationApi } from '../../interview/services/interviewApi';
 
 const statusBadgeStyles = {
   applied: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
@@ -20,8 +22,12 @@ const getATSBadgeStyle = (score = 0) => {
 };
 
 const MyApplicationsList = ({ applications, onWithdraw, isLoading }) => {
+  const navigate = useNavigate();
   const [withdrawingId, setWithdrawingId] = useState(null);
   const [expandedAtsId, setExpandedAtsId] = useState(null);
+  // Map: applicationId -> interviewId (fetched on demand)
+  const [interviewIds, setInterviewIds] = useState({});
+  const [fetchingInterviewId, setFetchingInterviewId] = useState(null);
 
   const handleWithdrawClick = async (id) => {
     if (window.confirm('Are you sure you want to withdraw this job application?')) {
@@ -34,6 +40,29 @@ const MyApplicationsList = ({ applications, onWithdraw, isLoading }) => {
       } finally {
         setWithdrawingId(null);
       }
+    }
+  };
+
+  const handleJoinInterview = async (applicationId) => {
+    // Check if we already cached the interviewId
+    if (interviewIds[applicationId]) {
+      navigate(`/interview/${interviewIds[applicationId]}`);
+      return;
+    }
+    setFetchingInterviewId(applicationId);
+    try {
+      const data = await getInterviewByApplicationApi(applicationId);
+      const interviewId = data?.data?._id;
+      if (!interviewId) {
+        toast.error('Interview room not found. Please contact your recruiter.');
+        return;
+      }
+      setInterviewIds((prev) => ({ ...prev, [applicationId]: interviewId }));
+      navigate(`/interview/${interviewId}`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Could not load interview. Try again.');
+    } finally {
+      setFetchingInterviewId(null);
     }
   };
 
@@ -177,6 +206,22 @@ const MyApplicationsList = ({ applications, onWithdraw, isLoading }) => {
                       <Trash2 className="h-3.5 w-3.5" />
                     )}
                     <span>Withdraw</span>
+                  </button>
+                )}
+
+                {/* Join Interview button */}
+                {app.status === 'interview' && (
+                  <button
+                    onClick={() => handleJoinInterview(app._id)}
+                    disabled={fetchingInterviewId === app._id}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-60"
+                  >
+                    {fetchingInterviewId === app._id ? (
+                      <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                    ) : (
+                      <Video className="h-3.5 w-3.5" />
+                    )}
+                    <span>Join Interview</span>
                   </button>
                 )}
               </div>

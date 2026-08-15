@@ -1,13 +1,16 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useJobs } from '../hook/useJobs';
 import {
   ArrowLeft, MapPin, DollarSign, Briefcase, Clock, Building2,
   CheckCircle2, XCircle, PauseCircle, Trash2, ChevronDown,
   Tag, ListChecks, GraduationCap, Gift, TrendingUp, Layers,
-  Users, Sparkles, ExternalLink, Mail, FileText, AlertCircle
+  Users, Sparkles, ExternalLink, Mail, FileText, AlertCircle,
+  Video, CalendarPlus
 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useInterview } from '../../interview/hooks/useInterview';
+import ScheduleInterviewModal from '../../interview/components/ScheduleInterviewModal';
 
 const STATUS_CONFIG = {
   open:   { label: 'Open',    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20', icon: CheckCircle2 },
@@ -122,6 +125,13 @@ const JobDetail = () => {
   const [loadingApplicants, setLoadingApplicants] = useState(false);
   const [expandedAtsId, setExpandedAtsId] = useState(null);
 
+  // Interview state
+  const { scheduleInterview, fetchInterviewByApplication } = useInterview();
+  const [scheduleTarget, setScheduleTarget] = useState(null); // application for scheduling
+  // Map: applicationId -> interviewId (populated after scheduling or fetching)
+  const [interviewMap, setInterviewMap] = useState({});
+  const [joiningInterviewId, setJoiningInterviewId] = useState(null);
+
   useEffect(() => {
     if (id) {
       fetchJobDetail(id).catch(() => {});
@@ -162,6 +172,42 @@ const JobDetail = () => {
     }
   };
 
+  const handleScheduleInterview = async ({ applicationId, scheduledAt, title }) => {
+    const interview = await scheduleInterview({ applicationId, scheduledAt, title });
+    if (!interview?.data?._id) {
+      throw new Error('Interview scheduled but room details missing. Please refresh.');
+    }
+    // Update application status in local state
+    setApplicants((prev) =>
+      prev.map((app) => (app._id === applicationId ? { ...app, status: 'interview' } : app))
+    );
+    // Store interviewId for the Join button
+    setInterviewMap((prev) => ({ ...prev, [applicationId]: interview.data._id }));
+    toast.success('🎉 Interview scheduled! The candidate can now join.');
+  };
+
+  const handleJoinInterviewAsRecruiter = async (applicationId) => {
+    // If we already have the interviewId cached, navigate directly
+    if (interviewMap[applicationId]) {
+      navigate(`/interview/${interviewMap[applicationId]}`);
+      return;
+    }
+    setJoiningInterviewId(applicationId);
+    try {
+      const interview = await fetchInterviewByApplication(applicationId);
+      if (!interview?._id) {
+        toast.error('No active interview found. Please schedule one first.');
+        return;
+      }
+      setInterviewMap((prev) => ({ ...prev, [applicationId]: interview._id }));
+      navigate(`/interview/${interview._id}`);
+    } catch (err) {
+      toast.error(err?.message || 'Could not load interview. Try again.');
+    } finally {
+      setJoiningInterviewId(null);
+    }
+  };
+
   const handleDelete = async () => {
     if (!window.confirm(`Delete "${job?.title}"? This cannot be undone.`)) return;
     try {
@@ -197,6 +243,7 @@ const JobDetail = () => {
   const postedDate = new Date(job.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
 
   return (
+    <>
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       {/* Back Button */}
       <button
@@ -419,6 +466,33 @@ const JobDetail = () => {
                             <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
+
+                        {/* Schedule Interview Button */}
+                        {app.status !== 'interview' && app.status !== 'selected' && app.status !== 'rejected' && app.status !== 'withdrawn' && (
+                          <button
+                            onClick={() => setScheduleTarget(app)}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-300 hover:bg-violet-500/20 transition-all"
+                          >
+                            <CalendarPlus className="h-3.5 w-3.5" />
+                            <span>Schedule Interview</span>
+                          </button>
+                        )}
+
+                        {/* Join Interview Button */}
+                        {(app.status === 'interview' || interviewMap[app._id]) && (
+                          <button
+                            onClick={() => handleJoinInterviewAsRecruiter(app._id)}
+                            disabled={joiningInterviewId === app._id}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/20 active:scale-95 transition-all disabled:opacity-60"
+                          >
+                            {joiningInterviewId === app._id ? (
+                              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                            ) : (
+                              <Video className="h-3.5 w-3.5" />
+                            )}
+                            <span>Join Interview</span>
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -507,6 +581,15 @@ const JobDetail = () => {
         </div>
       )}
     </div>
+
+    {/* Schedule Interview Modal */}
+    <ScheduleInterviewModal
+      isOpen={Boolean(scheduleTarget)}
+      application={scheduleTarget}
+      onClose={() => setScheduleTarget(null)}
+      onScheduled={handleScheduleInterview}
+    />
+    </>
   );
 };
 

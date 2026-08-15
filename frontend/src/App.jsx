@@ -9,6 +9,7 @@ import RecruiterDashboard from './features/jobposting/pages/RecruiterDashboard';
 import CandidateDashboard from './features/applicant/pages/CandidateDashboard';
 import CreateJob from './features/jobposting/pages/CreateJob';
 import JobDetail from './features/jobposting/pages/JobDetail';
+import InterviewRoomPage from './features/interview/pages/InterviewRoomPage';
 import PrivateRoute from './components/common/PrivateRoute';
 import PublicRoute from './components/common/PublicRoute';
 import { ToastContainer } from 'react-toastify';
@@ -91,6 +92,14 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <CandidateDashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/interview/:interviewId"
+              element={
+                <PrivateRoute>
+                  <InterviewRoomPage />
                 </PrivateRoute>
               }
             />

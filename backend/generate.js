@@ -14,4 +14,4 @@ function createModule(name) {
     fs.writeFileSync(path.join(folder, `${name}.${file}.js`), '');
   });
 }
-createModule('applicant');
+createModule('interview');

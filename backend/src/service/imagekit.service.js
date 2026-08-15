@@ -1,5 +1,5 @@
 import ImageKit, { toFile } from '@imagekit/nodejs';
-import Config from '../config/config.js';
+import Config from '../config/Config.js';
 
 const imagekit = new ImageKit({
   publicKey: Config.imagekit_public_key,
