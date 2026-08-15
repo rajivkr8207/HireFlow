@@ -15,7 +15,12 @@ const interviewRouter = Router();
 // Protect all interview routes with verifyJWT
 interviewRouter.use(verifyJWT);
 
-interviewRouter.post('/schedule-interview', verifyRecruiter, ScheduleInterviewValidate, ScheduleInterview);
+interviewRouter.post(
+  '/schedule-interview',
+  verifyRecruiter,
+  ScheduleInterviewValidate,
+  ScheduleInterview,
+);
 interviewRouter.get('/my-interviews', GetMyInterviewsController);
 interviewRouter.get('/application/:applicationId', GetInterviewByApplicationController);
 interviewRouter.get('/join-interview/:interview_id', joinInterview);

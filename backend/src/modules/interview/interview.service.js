@@ -4,12 +4,7 @@ import { Application } from '../applicant/applicant.model.js';
 import Config from '../../config/Config.js';
 import { ApiError } from '../../utils/ApiError.js';
 
-export const scheduleInterview = async ({
-  applicationId,
-  recruiterId,
-  scheduledAt,
-  title = 'Job Interview',
-}) => {
+export const scheduleInterview = async ({ applicationId, recruiterId, scheduledAt }) => {
   // 1. Find Application
   const application = await Application.findById(applicationId)
     .populate('candidateId')

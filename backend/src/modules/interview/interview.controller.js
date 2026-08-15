@@ -26,9 +26,7 @@ export const ScheduleInterview = asyncHandler(async (req, res) => {
     title,
   });
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, interview, 'Interview scheduled successfully'));
+  return res.status(201).json(new ApiResponse(201, interview, 'Interview scheduled successfully'));
 });
 
 export const joinInterview = asyncHandler(async (req, res) => {
@@ -60,9 +58,7 @@ export const joinInterview = asyncHandler(async (req, res) => {
   }
 
   const roomName = interview.roomName || interview.dailyRoomName;
-  const userName = isRecruiter
-    ? interview.recruiterId.fullName
-    : interview.candidateId.fullName;
+  const userName = isRecruiter ? interview.recruiterId.fullName : interview.candidateId.fullName;
 
   const token = await createLiveKitToken({
     roomName,
@@ -111,9 +107,7 @@ export const CancelInterview = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Interview not found');
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, interview, 'Interview cancelled successfully'));
+  return res.status(200).json(new ApiResponse(200, interview, 'Interview cancelled successfully'));
 });
 
 export const GetInterview = asyncHandler(async (req, res) => {
@@ -135,9 +129,7 @@ export const GetInterview = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Interview not found');
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, interview, 'Interview fetched successfully'));
+  return res.status(200).json(new ApiResponse(200, interview, 'Interview fetched successfully'));
 });
 
 export const GetMyInterviewsController = asyncHandler(async (req, res) => {
@@ -155,7 +147,5 @@ export const GetInterviewByApplicationController = asyncHandler(async (req, res)
   }
 
   const interview = await getInterviewByApplicationId(applicationId, req.user.id);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, interview, 'Interview fetched successfully'));
+  return res.status(200).json(new ApiResponse(200, interview, 'Interview fetched successfully'));
 });

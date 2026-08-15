@@ -1,8 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const DAILY_API_URL = 'https://api.daily.co/v1';
-
 const Config = {
   port: process.env.PORT,
   env: process.env.NODE_ENV,
