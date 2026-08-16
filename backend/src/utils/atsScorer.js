@@ -10,6 +10,7 @@ const pdfParseModule = require('pdf-parse');
  */
 export const extractResumeText = async (buffer, mimetype) => {
   if (!buffer) return '';
+  console.log(buffer, mimetype)
   try {
     if (mimetype === 'application/pdf') {
       if (typeof pdfParseModule === 'function') {

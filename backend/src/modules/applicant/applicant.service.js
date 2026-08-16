@@ -80,6 +80,7 @@ export const applyToJob = async ({
   })
   // 1. Verify job exists and is open
   const job = await jobpostingModel.findById(jobId);
+  console.log("job", job)
   if (!job) {
     throw new ApiError(404, 'Job not found');
   }
@@ -89,9 +90,10 @@ export const applyToJob = async ({
 
   // 2. Find or auto-create candidate profile
   const candidate = await getOrCreateCandidate(userId);
-
+  console.log('candidate', candidate)
   // 3. Check for duplicate application
   const existing = await Application.findOne({ jobId, candidateId: candidate._id });
+  console.log('existing', existing)
   if (existing) {
     throw new ApiError(409, 'You have already applied to this job');
   }
@@ -101,34 +103,110 @@ export const applyToJob = async ({
   let resumeText = '';
 
   if (file) {
+    console.log('Resume file received:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+    });
+
+    // -----------------------------------
+    // 4.1 Upload Resume to ImageKit
+    // -----------------------------------
+
     try {
-      const uploadResult = await imagekitService.uploadDocument(file, userId);
-      console.log('imagekit result', uploadResult);
-      finalResumeUrl = uploadResult.url;
+      const uploadResult = await imagekitService.uploadDocument(
+        file,
+        userId,
+      );
+
+      console.log('ImageKit upload result:', uploadResult);
+
+      finalResumeUrl = uploadResult?.url || '';
+
     } catch (uploadErr) {
+      console.error(
+        'ImageKit upload error:',
+        uploadErr,
+      );
+
+      // Candidate ka existing resume use karo
       if (!finalResumeUrl && candidate.resume) {
         finalResumeUrl = candidate.resume;
       }
+
+      // Existing resume bhi nahi hai
       if (!finalResumeUrl) {
-        throw new ApiError(500, `Failed to upload resume to ImageKit: ${uploadErr.message}`);
+        throw new ApiError(
+          500,
+          `Failed to upload resume to ImageKit: ${uploadErr.message
+          }`,
+        );
       }
     }
-    resumeText = await extractResumeText(file.buffer, file.mimetype);
+
+    // -----------------------------------
+    // 4.2 Extract Resume Text
+    // -----------------------------------
+
+    try {
+      if (!file.buffer) {
+        throw new Error('Resume file buffer is empty');
+      }
+
+      resumeText = await extractResumeText(
+        file.buffer,
+        file.mimetype,
+      );
+
+      console.log(
+        'Resume text extracted:',
+        resumeText?.length,
+      );
+
+    } catch (extractErr) {
+      console.error(
+        'Resume text extraction error:',
+        extractErr,
+      );
+
+      throw new ApiError(
+        400,
+        `Failed to extract resume text: ${extractErr.message
+        }`,
+      );
+    }
   }
+
+  // -----------------------------------
+  // 4.3 If no resume URL
+  // -----------------------------------
+
+  console.log('Final resume URL:', finalResumeUrl);
+  console.log('Resume text length:', resumeText.length);
 
   if (!finalResumeUrl) {
     if (candidate.resume) {
       finalResumeUrl = candidate.resume;
     } else {
-      throw new ApiError(400, 'Please upload a resume file or provide a valid resume link');
+      throw new ApiError(
+        400,
+        'Please upload a resume file or provide a valid resume link',
+      );
     }
   }
 
-  // Update candidate profile resume if not present
+  // -----------------------------------
+  // 4.4 Update candidate resume
+  // -----------------------------------
+
   if (finalResumeUrl && !candidate.resume) {
     candidate.resume = finalResumeUrl;
     await candidate.save();
   }
+
+  console.log(
+    'Step 4 completed successfully',
+  );
 
   // 5. Calculate ATS Score
   const {
@@ -158,7 +236,7 @@ export const applyToJob = async ({
       summary,
     },
   });
-
+  console.log("application", application)
   return application;
 };
 

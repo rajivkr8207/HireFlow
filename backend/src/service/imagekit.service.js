@@ -2,9 +2,7 @@ import ImageKit, { toFile } from '@imagekit/nodejs';
 import Config from '../config/Config.js';
 
 const imagekit = new ImageKit({
-  publicKey: Config.imagekit_public_key,
   privateKey: Config.imagekit_private_key,
-  urlEndpoint: Config.imagekit_url_endpoint,
 });
 
 class ImageKitService {
@@ -21,17 +19,54 @@ class ImageKitService {
   }
 
   async uploadDocument(file, documentName) {
-    const safeName = documentName ? documentName.replace(/\s+/g, '_') : 'doc';
-    const fileObj = file.buffer
-      ? await toFile(Buffer.from(file.buffer), file.originalname || `${safeName}.pdf`)
-      : file;
+    console.log('UploadDocument called:', {
+      originalname: file?.originalname,
+      mimetype: file?.mimetype,
+      hasBuffer: !!file?.buffer,
+    });
+
+    const safeName = documentName
+      ? documentName.replace(/\s+/g, '_')
+      : 'doc';
+
+    let fileObj;
+
+    if (file.buffer) {
+      console.log('Converting buffer to File object');
+
+      fileObj = await toFile(
+        Buffer.from(file.buffer),
+        file.originalname || `${safeName}.pdf`,
+      );
+
+      console.log('File object created successfully');
+      console.log('File object:', fileObj);
+    } else if (file.path) {
+      console.log('Using file path:', file.path);
+
+      fileObj = file.path;
+    } else {
+      throw new Error(
+        'Invalid file object: no buffer or path',
+      );
+    }
+
+    console.log('BEFORE IMAGEKIT UPLOAD');
+
     const result = await imagekit.files.upload({
       file: fileObj,
       fileName: `doc_${safeName}_${Date.now()}`,
       folder: '/documents',
     });
-    console.log('imagekit file', result);
-    return { url: result.url, fileId: result.fileId };
+
+    console.log('AFTER IMAGEKIT UPLOAD');
+
+    console.log('imagekit file:', result);
+
+    return {
+      url: result.url,
+      fileId: result.fileId,
+    };
   }
 
   async deleteFile(fileId) {

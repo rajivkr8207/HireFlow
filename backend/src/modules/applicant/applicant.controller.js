@@ -22,7 +22,6 @@ export const getAllJobsController = asyncHandler(async (req, res) => {
  */
 export const applyJobController = asyncHandler(async (req, res) => {
   const { jobId, resume, coverLetter, expectedSalary, noticePeriod } = req.body;
-  console.log(req.body)
   const application = await applyToJob({
     userId: req.user.id,
     jobId,
